@@ -3,6 +3,18 @@
 Real regressions found in the projects this repository evaluates, how each was detected, the
 fix, and the evidence. Newest first.
 
+## R7 — A wrong ticker lost a question the query answered (sec-mcp-agent, found in the traces)
+
+- **Detected by:** the trace dashboard of live run 44557681399, table "Tool errors (what the model
+  sent)": `search_filings {"query": "UnitedHealth Group medical cost trends", "ticker": "UHG"}`
+  failed with "not in the index". The ticker is UNH; the query named the company.
+- **Fix:** [sec-mcp-agent@e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06eb5040528f328dd61e42ac655439ac73fb):
+  a wrong ticker falls back to the company the query names unambiguously; a ticker for a company
+  that is not indexed (TM, SBUX in the same traces) still fails.
+- **Evidence:** dataset `tool_calls/v2` (162 recorded calls, including the live run's) replayed
+  through both versions: acceptance 83.3% → 85.2%, "not in the index" 20 → 17. The offline
+  baseline moved to the new value, so a change that loses these calls again fails the gate.
+
 ## R6 — Langfuse removed the API the trace check read (this repository, found by the live run)
 
 - **Detected by:** the first live run ([44557681399](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44557681399)).

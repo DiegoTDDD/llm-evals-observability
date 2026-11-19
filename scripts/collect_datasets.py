@@ -18,10 +18,16 @@ ROOT = Path(__file__).resolve().parents[1]
 DATASETS = ROOT / "datasets"
 
 
-def tool_calls(sec_repo: Path) -> list[dict]:
+def tool_calls(sec_repo: Path, live: list[Path] | None = None) -> list[dict]:
+    """Every tool call the model made: the project's own eval runs, then this repository's
+    live runs (their results.json, labelled live:<directory>)."""
+    sources = [
+        (results, results.parent.name if results.parent.name != "eval" else "latest")
+        for results in sorted((sec_repo / "eval").glob("**/results.json"))
+    ]
+    sources += [(p, f"live:{p.parent.parent.name}") for p in (live or [])]
     rows = []
-    for results in sorted((sec_repo / "eval").glob("**/results.json")):
-        run = results.parent.name if results.parent.name != "eval" else "latest"
+    for results, run in sources:
         data = json.loads(results.read_text(encoding="utf-8"))
         for row in data["rows"]:
             for t in (row.get("answer") or {}).get("tool_calls", []):
@@ -62,10 +68,17 @@ def refresh_manifest() -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sec-mcp-agent", type=Path)
-    parser.add_argument("--version", default="v1")
+    parser.add_argument(
+        "--live",
+        type=Path,
+        nargs="*",
+        default=[],
+        help="results.json files from live runs (reports/live/<project>/)",
+    )
+    parser.add_argument("--version", required=True)
     args = parser.parse_args()
     if args.sec_mcp_agent:
-        print(write("tool_calls", args.version, tool_calls(args.sec_mcp_agent)))
+        print(write("tool_calls", args.version, tool_calls(args.sec_mcp_agent, args.live)))
     print(json.dumps(refresh_manifest(), indent=1))
 
 

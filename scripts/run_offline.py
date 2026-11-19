@@ -14,6 +14,9 @@ from pathlib import Path
 import anyio
 
 ROOT = Path(__file__).resolve().parents[1]
+# The dataset the gate scores. Datasets are immutable: moving to a new version means
+# re-baselining in the same pull request (ADR 0004).
+DATASET = "tool_calls/v2.jsonl"
 sys.path.insert(0, str(ROOT))
 from evalobs.datasets import load  # noqa: E402
 from evalobs.suites import tool_calls  # noqa: E402
@@ -34,9 +37,7 @@ CATEGORIES = [
 async def run_all() -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         return {
-            "tool_calls": await tool_calls.run(
-                load("tool_calls/v1.jsonl"), COMPANIES, CATEGORIES, Path(tmp)
-            ),
+            "tool_calls": await tool_calls.run(load(DATASET), COMPANIES, CATEGORIES, Path(tmp)),
         }
 
 

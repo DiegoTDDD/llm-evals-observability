@@ -55,6 +55,14 @@ The same 69 recorded calls of qwen2.5:3b, replayed through three versions of sec
 | [7b7cbc4](https://github.com/DiegoTDDD/sec-mcp-agent/commit/7b7cbc469e62bd6cec53094bf9c71acd1a86d402) (after eval-run fixes) | 75.4% | 14.5% | ❌ fails |
 | [abd66dc](https://github.com/DiegoTDDD/sec-mcp-agent/commit/abd66dc7b0ba6ecaae583c1f15df533ecf03b110) (current, R5 fixed) | **81.2%** | **8.7%** | ✅ baseline |
 
+With dataset `tool_calls/v2` (162 calls: the project's six eval runs plus this repository's
+first live run), the trace dashboard led to R7, a wrong ticker for a company the query named:
+
+| sec-mcp-agent | Accepted | "Not in the index" | Gate |
+| --- | --- | --- | --- |
+| [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e07f50c1e9f4309dca9a864c6f94bab3f84) | 83.3% | 20 | ❌ fails the new baseline |
+| [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06eb5040528f328dd61e42ac655439ac73fb) (current, R7 fixed) | **85.2%** | **17** | ✅ baseline |
+
 The replay also found R5: once R1 was fixed, most calls still rejected named sections the index
 does not have. Every regression found so far, with cause, fix and evidence:
 [docs/regressions.md](docs/regressions.md).
