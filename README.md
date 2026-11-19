@@ -63,6 +63,11 @@ first live run), the trace dashboard led to R7, a wrong ticker for a company the
 | [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e07f50c1e9f4309dca9a864c6f94bab3f84) | 83.3% | 20 | ❌ fails the new baseline |
 | [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06eb5040528f328dd61e42ac655439ac73fb) (current, R7 fixed) | **85.2%** | **17** | ✅ baseline |
 
+**Proof that the gate blocks it:** [pull request #1](https://github.com/DiegoTDDD/llm-evals-observability/pull/1)
+pins sec-mcp-agent back to 80086e0; the gate failed it
+([run 44568525181](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44568525181):
+acceptance 0.833 against a baseline of 0.852) and it was closed without merging.
+
 The replay also found R5: once R1 was fixed, most calls still rejected named sections the index
 does not have. Every regression found so far, with cause, fix and evidence:
 [docs/regressions.md](docs/regressions.md).
