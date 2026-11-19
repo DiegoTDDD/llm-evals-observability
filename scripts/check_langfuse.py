@@ -43,8 +43,10 @@ def main() -> None:
             break
         time.sleep(15)  # Langfuse ingests asynchronously through its worker
     observations = get("/api/public/observations?limit=1").get("meta", {}).get("totalItems")
-    sample = [{k: t.get(k) for k in ("name", "timestamp", "latency", "totalCost")}
-              for t in get("/api/public/traces?limit=5").get("data", [])]
+    sample = [
+        {k: t.get(k) for k in ("name", "timestamp", "latency", "totalCost")}
+        for t in get("/api/public/traces?limit=5").get("data", [])
+    ]
     summary = {"traces": total, "observations": observations, "sample": sample}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(summary, indent=1) + "\n", encoding="utf-8")

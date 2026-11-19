@@ -1,6 +1,6 @@
 """End-to-end metrics of a live run, in the shape baselines/live.json gates.
 
-    python scripts/live_metrics.py reports/live reports/live/metrics.json
+python scripts/live_metrics.py reports/live reports/live/metrics.json
 """
 
 from __future__ import annotations
