@@ -1,0 +1,8 @@
+{
+ "sec_mcp_agent.pass_rate": {"value": 0.705, "higher_is_better": true, "tolerance": 0.15},
+ "sec_mcp_agent.out_of_scope_pass_rate": {"value": 1.0, "higher_is_better": true, "tolerance": 0.5},
+ "sec_mcp_agent.errors": {"value": 0, "higher_is_better": false, "tolerance": 0},
+ "fraud_agents.graph_pattern_accuracy": {"value": 0.767, "higher_is_better": true, "tolerance": 0.034},
+ "fraud_agents.graph_verdict_accuracy": {"value": 0.833, "higher_is_better": true, "tolerance": 0.034},
+ "fraud_agents.graph_errors": {"value": 0, "higher_is_better": false, "tolerance": 0}
+}

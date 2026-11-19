@@ -3,6 +3,27 @@
 Real regressions found in the projects this repository evaluates, how each was detected, the
 fix, and the evidence. Newest first.
 
+## R6 — Langfuse removed the API the trace check read (this repository, found by the live run)
+
+- **Detected by:** the first live run ([44557681399](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44557681399)).
+  Both projects' evals finished (sec-mcp-agent 22 questions, fraud-investigation-agents 30
+  cases, 0 errors), then `check_langfuse.py` failed with HTTP 404 on `/api/public/traces`.
+- **Cause:** Langfuse v4 removed the legacy read endpoints on 2026-11-16, three days before the
+  run. OTLP ingestion was unaffected; only the check could not read the traces back.
+- **Fix:** [20823cc](https://github.com/DiegoTDDD/llm-evals-observability/commit/20823cc): page
+  through the Observations API v2 (`/api/public/v2/observations`) and count distinct trace ids,
+  with a unit test for the cursor and the counting.
+
+## Note — run-to-run variance is real, so the live gate has tolerances
+
+Same code (sec-mcp-agent 80086e0), same model, temperature 0, same questions: 17/22 in the
+project's own eval run and 14/22 in this repository's first live run. Ollama on a CPU is not
+bit-for-bit repeatable, and one different token early in a reply changes the tool call. The
+fraud-investigation-agents graph reproduced exactly (76.7% both times): its tool arguments are
+written by code, not by the model (that project's ADR 0001). `baselines/live.json` therefore
+gates sec-mcp-agent's pass rate with a tolerance of 0.15 (about three questions) around the mean
+of the two runs, and the fraud graph with one case (0.034).
+
 ## R5 — Unknown sections rejected (sec-mcp-agent, found here)
 
 - **Detected by:** the offline tool-call replay (`tool_calls` suite). After R1's fix, the calls
