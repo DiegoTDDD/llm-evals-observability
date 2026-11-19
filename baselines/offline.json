@@ -1,0 +1,4 @@
+{
+ "tool_calls.acceptance_rate": {"value": 0.812, "higher_is_better": true, "tolerance": 0.0},
+ "tool_calls.rejected_arguments_rate": {"value": 0.087, "higher_is_better": false, "tolerance": 0.0}
+}

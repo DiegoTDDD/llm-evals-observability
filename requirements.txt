@@ -1,0 +1,12 @@
+# The two projects under evaluation, pinned. Bumping a pin is how a change in them reaches the
+# gate here.
+sec-mcp-agent @ git+https://github.com/DiegoTDDD/sec-mcp-agent@abd66dc7b0ba6ecaae583c1f15df533ecf03b110
+opentelemetry-sdk==1.45.2
+opentelemetry-exporter-otlp-proto-http==1.45.2
+mcp==2.3.0
+pydantic==2.14.3
+xgboost==2.1.1
+scikit-learn==1.5.2
+pandas==2.2.3
+numpy==2.1.3
+joblib==1.4.2

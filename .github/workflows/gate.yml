@@ -1,0 +1,31 @@
+name: gate
+
+# Offline component evals against the committed baselines. No language model: replays what
+# the model really did in recorded runs through the current code. A drop fails the check, so
+# the pull request cannot merge while branch protection requires it.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Lint and unit tests
+        run: ruff check . && ruff format --check . && pytest -q -p anyio
+      - name: Offline evals
+        run: python scripts/run_offline.py --out reports/offline.json
+      - name: Gate against baselines/offline.json
+        run: python scripts/gate.py reports/offline.json baselines/offline.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-report
+          path: reports/offline.json

@@ -1,0 +1,160 @@
+name: live
+
+# Weekly end-to-end evaluation with a real local model, fully traced:
+#   one job per project, each with its own Ollama and a throwaway self-hosted Langfuse;
+#   the project's own eval script runs unchanged under evalobs.instrument_run;
+#   spans go to Langfuse (checked through its API) and to JSONL;
+#   a final job builds the dashboard, gates end-to-end metrics and publishes to Pages.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 7 * * 1"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: live
+  cancel-in-progress: false
+
+env:
+  MODEL: qwen2.5:3b
+  SEC_MCP_AGENT_REF: abd66dc7b0ba6ecaae583c1f15df533ecf03b110
+  FRAUD_AGENTS_REF: 923fe0376bda6a5279b5703fec7a006338bdf372
+
+jobs:
+  project:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: sec-mcp-agent
+            repo: DiegoTDDD/sec-mcp-agent
+            min_traces: 15
+          - service: fraud-investigation-agents
+            repo: DiegoTDDD/fraud-investigation-agents
+            min_traces: 25
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          ref: ${{ matrix.service == 'sec-mcp-agent' && env.SEC_MCP_AGENT_REF || env.FRAUD_AGENTS_REF }}
+          path: ext/${{ matrix.service }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install the project and the tracing package
+        run: |
+          pip install -r ext/${{ matrix.service }}/requirements.txt -r ext/${{ matrix.service }}/requirements-dev.txt
+          pip install opentelemetry-sdk==1.45.2 opentelemetry-exporter-otlp-proto-http==1.45.2
+          pip install --no-deps -e .
+      - name: Start Langfuse (self-hosted, throwaway keys)
+        run: |
+          pk="pk-lf-$(openssl rand -hex 8)"; sk="sk-lf-$(openssl rand -hex 16)"
+          {
+            echo "LANGFUSE_PUBLIC_KEY=$pk"; echo "LANGFUSE_SECRET_KEY=$sk"
+            echo "LANGFUSE_HOST=http://localhost:3000"
+          } >> "$GITHUB_ENV"
+          export LANGFUSE_INIT_ORG_ID=evalobs LANGFUSE_INIT_ORG_NAME=evalobs
+          export LANGFUSE_INIT_PROJECT_ID=agents LANGFUSE_INIT_PROJECT_NAME=agents
+          export LANGFUSE_INIT_PROJECT_PUBLIC_KEY="$pk" LANGFUSE_INIT_PROJECT_SECRET_KEY="$sk"
+          export LANGFUSE_INIT_USER_EMAIL=ci@example.com LANGFUSE_INIT_USER_NAME=ci
+          export LANGFUSE_INIT_USER_PASSWORD="$(openssl rand -hex 12)"
+          export SALT="$(openssl rand -hex 16)" ENCRYPTION_KEY="$(openssl rand -hex 32)"
+          export NEXTAUTH_SECRET="$(openssl rand -hex 16)" TELEMETRY_ENABLED=false
+          docker compose -f ops/langfuse/docker-compose.yml up -d
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/public/health && break; sleep 5; done
+      - name: Build the project's data
+        env:
+          SEC_IDENTITY: ${{ secrets.SEC_IDENTITY }}
+        working-directory: ext/${{ matrix.service }}
+        run: |
+          if [ "${{ matrix.service }}" = "sec-mcp-agent" ]; then
+            bash scripts/build_fraud_model.sh && python scripts/build_index.py
+          else
+            bash scripts/build_data.sh
+          fi
+      - name: Cache Ollama models
+        uses: actions/cache@v4
+        with:
+          path: ~/.ollama/models
+          key: ollama-${{ env.MODEL }}
+      - name: Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve > /tmp/ollama.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:11434/api/version && break; sleep 2; done
+          ollama pull "$MODEL"
+      - name: Run the project's eval, traced
+        run: |
+          eval "$(python -c "from evalobs.tracing import langfuse_env; import os; \
+            [print(f'export {k}=\"{v}\"') for k, v in langfuse_env(os.environ['LANGFUSE_HOST'], \
+            os.environ['LANGFUSE_PUBLIC_KEY'], os.environ['LANGFUSE_SECRET_KEY']).items()]")"
+          cd ext/${{ matrix.service }}
+          python -m evalobs.instrument_run --service ${{ matrix.service }} --otlp \
+            --jsonl "$GITHUB_WORKSPACE/reports/live/spans-${{ matrix.service }}.jsonl" \
+            scripts/run_eval.py -- --model "$MODEL"
+      - name: Check the traces reached Langfuse
+        run: |
+          python scripts/check_langfuse.py --min-traces ${{ matrix.min_traces }} \
+            --out reports/live/langfuse-${{ matrix.service }}.json
+      - name: Collect results
+        if: always()
+        run: |
+          mkdir -p reports/live/${{ matrix.service }}
+          cp -r ext/${{ matrix.service }}/eval/results.* reports/live/${{ matrix.service }}/ || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-${{ matrix.service }}
+          path: reports/live/
+
+  publish:
+    needs: project
+    if: always()
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install opentelemetry-sdk==1.45.2 && pip install --no-deps -e .
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: live-*
+          path: reports/live
+          merge-multiple: true
+      - name: Dashboard and end-to-end metrics
+        run: |
+          cat reports/live/spans-*.jsonl > reports/live/spans.jsonl
+          python -m evalobs.report reports/live/spans.jsonl reports/site/index.html
+          python scripts/live_metrics.py reports/live reports/live/metrics.json
+      - name: Commit the run's results
+        run: |
+          rm reports/live/spans-*.jsonl
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/
+          git commit -m "Live run ${{ github.run_id }}" || exit 0
+          git pull --rebase && git push
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/site
+      - id: deploy
+        uses: actions/deploy-pages@v4
+      - name: Gate end-to-end metrics
+        run: |
+          if [ -f baselines/live.json ]; then
+            python scripts/gate.py reports/live/metrics.json baselines/live.json
+          else
+            echo "No baselines/live.json yet: this run's metrics become the first baseline."
+          fi
