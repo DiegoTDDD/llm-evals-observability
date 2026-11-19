@@ -1,8 +1,8 @@
 {
  "sec_mcp_agent": {
-  "pass_rate": 0.636,
-  "filings_pass_rate": 0.562,
-  "grounded_rate": 0.562,
+  "pass_rate": 0.773,
+  "filings_pass_rate": 0.75,
+  "grounded_rate": 0.75,
   "out_of_scope_pass_rate": 1.0,
   "fraud_exact_arguments_rate": 0.75,
   "errors": 0
@@ -13,5 +13,9 @@
   "single_agent_pattern_accuracy": 0.467,
   "rules_pattern_accuracy": 0.8,
   "graph_errors": 0
+ },
+ "langfuse": {
+  "fraud-investigation-agents": 62,
+  "sec-mcp-agent": 22
  }
 }

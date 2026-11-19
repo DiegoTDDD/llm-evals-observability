@@ -1,0 +1,46 @@
+{
+ "traces": 62,
+ "observations": 976,
+ "by_type": {
+  "GENERATION": 110,
+  "TOOL": 341,
+  "SPAN": 525
+ },
+ "top_names": {
+  "chat qwen2.5:3b": 110,
+  "get_recent_activity": 101,
+  "tool get_recent_activity": 101,
+  "tools/list": 62,
+  "server/discover": 62,
+  "get_last_location": 60,
+  "tool get_last_location": 60,
+  "tool score_transaction": 60
+ },
+ "sample_roots": [
+  {
+   "name": "graph.investigate",
+   "startTime": "2026-11-19T17:04:38.603Z",
+   "latency": 42.794
+  },
+  {
+   "name": "single_agent.investigate",
+   "startTime": "2026-11-19T17:04:23.200Z",
+   "latency": 15.403
+  },
+  {
+   "name": "graph.investigate",
+   "startTime": "2026-11-19T17:03:44.411Z",
+   "latency": 38.788
+  },
+  {
+   "name": "single_agent.investigate",
+   "startTime": "2026-11-19T17:03:25.944Z",
+   "latency": 18.466
+  },
+  {
+   "name": "graph.investigate",
+   "startTime": "2026-11-19T17:02:43.811Z",
+   "latency": 42.132
+  }
+ ]
+}
