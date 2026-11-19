@@ -75,7 +75,23 @@ does not have. Every regression found so far, with cause, fix and evidence:
 ### Live runs
 
 <!-- LIVE:START -->
-The first live run fills this section and publishes the dashboard.
+**Dashboard: [diegotddd.github.io/llm-evals-observability](https://diegotddd.github.io/llm-evals-observability/)**
+(latency, tokens and errors per run, per LLM step and per MCP tool, and the exact arguments of
+every failed tool call), rebuilt by every live run.
+
+Live run [44567898582](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44567898582),
+qwen2.5:3b on CPU-only runners, both projects' own eval scripts run unchanged under the tracer:
+
+| | sec-mcp-agent | fraud-investigation-agents |
+| --- | --- | --- |
+| End-to-end | 17 of 22 questions passed | graph 77% pattern accuracy (single agent 47%, rules 80%) |
+| Traces in Langfuse (read back through its API) | 22 traces, 231 observations | 62 traces, 976 observations |
+| Observation types | 78 generations, 22 tool calls, 131 spans | 110 generations, 341 tool calls, 525 spans |
+| Live gate ([`baselines/live.json`](baselines/live.json)) | ✅ | ✅ |
+
+The two live runs so far gave sec-mcp-agent 14/22 and 17/22 with the same code, and the fraud
+graph 76.7% both times: the live gate's tolerances come from that measured variance
+([docs/regressions.md](docs/regressions.md), last note).
 <!-- LIVE:END -->
 
 ## Run it
