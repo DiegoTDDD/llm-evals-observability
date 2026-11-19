@@ -69,7 +69,7 @@ The first live run fills this section and publishes the dashboard.
 
 ```bash
 pip install -r requirements.txt -r requirements-dev.txt
-pytest -q -p anyio                                     # 16 tests
+pytest -q -p anyio                                     # 18 tests
 python scripts/run_offline.py                          # reports/offline.json
 python scripts/gate.py reports/offline.json baselines/offline.json
 
