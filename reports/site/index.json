@@ -1,0 +1,221 @@
+{
+ "spans": 1246,
+ "generated": "2026-11-19 16:35 UTC",
+ "models": [
+  "qwen2.5:3b"
+ ],
+ "roots": [
+  {
+   "service": "fraud-investigation-agents",
+   "run": "graph.investigate",
+   "calls": 30,
+   "errors": 0,
+   "p50": 52.983,
+   "p95": 85.079,
+   "total_seconds": 1590.0
+  },
+  {
+   "service": "fraud-investigation-agents",
+   "run": "single_agent.investigate",
+   "calls": 30,
+   "errors": 0,
+   "p50": 26.402,
+   "p95": 32.151,
+   "total_seconds": 781.7
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "calls": 22,
+   "errors": 0,
+   "p50": 142.793,
+   "p95": 210.903,
+   "total_seconds": 2845.4
+  }
+ ],
+ "llm": [
+  {
+   "service": "fraud-investigation-agents",
+   "step": "Plan",
+   "calls": 30,
+   "errors": 0,
+   "p50": 18.41,
+   "p95": 24.165,
+   "total_seconds": 557.0,
+   "input_tokens": 5592,
+   "output_tokens": 5194
+  },
+  {
+   "service": "fraud-investigation-agents",
+   "step": "Report",
+   "calls": 85,
+   "errors": 0,
+   "p50": 21.955,
+   "p95": 32.126,
+   "total_seconds": 1811.7,
+   "input_tokens": 44117,
+   "output_tokens": 13008
+  },
+  {
+   "service": "sec-mcp-agent",
+   "step": "AnswerDraft",
+   "calls": 29,
+   "errors": 0,
+   "p50": 45.345,
+   "p95": 104.166,
+   "total_seconds": 1540.3,
+   "input_tokens": 33608,
+   "output_tokens": 6897
+  },
+  {
+   "service": "sec-mcp-agent",
+   "step": "tool round",
+   "calls": 46,
+   "errors": 0,
+   "p50": 10.889,
+   "p95": 78.739,
+   "total_seconds": 1304.7,
+   "input_tokens": 51295,
+   "output_tokens": 5057
+  }
+ ],
+ "tools": [
+  {
+   "tool": "get_recent_activity",
+   "calls": 117,
+   "errors": 0,
+   "p50": 0.005,
+   "p95": 0.013,
+   "total_seconds": 0.8
+  },
+  {
+   "tool": "score_transaction",
+   "calls": 65,
+   "errors": 1,
+   "p50": 0.013,
+   "p95": 0.02,
+   "total_seconds": 0.8
+  },
+  {
+   "tool": "get_card_profile",
+   "calls": 60,
+   "errors": 0,
+   "p50": 0.008,
+   "p95": 0.011,
+   "total_seconds": 0.4
+  },
+  {
+   "tool": "get_last_location",
+   "calls": 60,
+   "errors": 0,
+   "p50": 0.006,
+   "p95": 0.01,
+   "total_seconds": 0.3
+  },
+  {
+   "tool": "search_filings",
+   "calls": 19,
+   "errors": 4,
+   "p50": 0.014,
+   "p95": 0.019,
+   "total_seconds": 0.3
+  },
+  {
+   "tool": "get_alert",
+   "calls": 60,
+   "errors": 0,
+   "p50": 0.005,
+   "p95": 0.007,
+   "total_seconds": 0.2
+  }
+ ],
+ "tool_errors": [
+  {
+   "tool": "search_filings",
+   "error": "Error executing tool search_filings: 'COF' is not in the index. Companies: AAPL (Apple Inc.), AMZN (Amazon Com Inc), BA (Boeing Co), BAC (Bank Of America Corp /",
+   "arguments": "{\"query\": \"operating segments\", \"ticker\": \"COF\"}"
+  },
+  {
+   "tool": "search_filings",
+   "error": "Error executing tool search_filings: 'UHG' is not in the index. Companies: AAPL (Apple Inc.), AMZN (Amazon Com Inc), BA (Boeing Co), BAC (Bank Of America Corp /",
+   "arguments": "{\"query\": \"UnitedHealth Group medical cost trends\", \"section\": \"mda\", \"ticker\": \"UHG\"}"
+  },
+  {
+   "tool": "search_filings",
+   "error": "Error executing tool search_filings: 'TM' is not in the index. Companies: AAPL (Apple Inc.), AMZN (Amazon Com Inc), BA (Boeing Co), BAC (Bank Of America Corp /D",
+   "arguments": "{\"query\": \"risk_factors\", \"section\": \"risk_factors\", \"ticker\": \"TM\"}"
+  },
+  {
+   "tool": "search_filings",
+   "error": "Error executing tool search_filings: 'SBUX' is not in the index. Companies: AAPL (Apple Inc.), AMZN (Amazon Com Inc), BA (Boeing Co), BAC (Bank Of America Corp ",
+   "arguments": "{\"query\": \"coffee bean prices\", \"ticker\": \"SBUX\", \"section\": \"business\"}"
+  },
+  {
+   "tool": "score_transaction",
+   "error": "Error executing tool score_transaction: 1 validation error for score_transactionArguments\ntimestamp\n  Field required [type=missing, input_value={'card_id': 'car",
+   "arguments": "{\"card_id\": \"card_0003\", \"amount\": 3.5, \"category\": \"fuel\", \"city\": \"Curitiba\", \"previous_timestamps\": \"2026-03-01T10:00:20,2026-03-01T10:00:41,2026-03-01T10:01"
+  }
+ ],
+ "slowest": [
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 211.3,
+   "what": "How many associates does Walmart employ?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 210.9,
+   "what": "What does Visa say about interchange fee regulation or litigation?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 196.4,
+   "what": "What does Pfizer say about patent expirations and loss of exclusivity?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 182.7,
+   "what": "What risks does Tesla describe about ramping up vehicle production?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 178.6,
+   "what": "Who does Netflix say it competes with for members' entertainment time?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 169.8,
+   "what": "What does NVIDIA report about US export controls and their effect on its sales?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 168.9,
+   "what": "How could climate change regulation affect Exxon Mobil's business, according to its 10-K?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 165.8,
+   "what": "How does JPMorgan Chase describe its cybersecurity risk?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 158.4,
+   "what": "What does Boeing say about 737 production and quality?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 149.6,
+   "what": "What does Meta say about privacy and data protection regulation?"
+  }
+ ]
+}
