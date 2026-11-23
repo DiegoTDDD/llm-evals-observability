@@ -8,8 +8,8 @@
 | --- | --- | --- | --- | --- |
 | model_only | 97% | n/a (no pattern) | 0.0 | 0 |
 | rules_only | 83% | 80% | 0.0 | 0 |
-| single_agent | 80% | 47% | 26.72 | 0 |
-| graph | 83% | 77% | 54.33 | 0 |
+| single_agent | 80% | 40% | 25.12 | 0 |
+| graph | 83% | 80% | 44.18 | 0 |
 
 ## Pattern accuracy by case type
 
@@ -18,16 +18,16 @@
 | card_testing | 6 | 6 | 0 | 6 |
 | card_testing (hard) | 2 | 0 | 0 | 0 |
 | high_amount | 8 | 7 | 8 | 7 |
-| impossible_travel | 7 | 5 | 2 | 4 |
+| impossible_travel | 7 | 5 | 0 | 5 |
 | none | 4 | 3 | 4 | 3 |
 | none (hard) | 3 | 3 | 0 | 3 |
 
 ## The critic loop
 
 - Approved on the first round: 9
-- Approved after the critic sent work back: 20
-- Still rejected after 3 rounds: 1
-- Critic rejections in total: 26; extra checks it requested: 9
+- Approved after the critic sent work back: 21
+- Still rejected after 3 rounds: 0
+- Critic rejections in total: 25; extra checks it requested: 11
 - Cases the rework turned from wrong to right: 12; from right to wrong: 3
 - Mean LLM calls per case: 2.83
 
@@ -51,13 +51,13 @@
 | [c14](transcripts/c14.md) | card_testing | normal | fraud/card_testing ✓ | legitimate/none ✗ | fraud/card_testing ✓ | 2 |
 | [c15](transcripts/c15.md) | card_testing | hard: first charge of a burst | legitimate/none ✗ | legitimate/none ✗ | legitimate/none ✗ | 3 |
 | [c16](transcripts/c16.md) | card_testing | hard: first charge of a burst | legitimate/none ✗ | legitimate/none ✗ | legitimate/none ✗ | 3 |
-| [c17](transcripts/c17.md) | impossible_travel | normal | fraud/card_testing ✗ | fraud/high_amount ✗ | fraud/card_testing ✗ | 2 |
+| [c17](transcripts/c17.md) | impossible_travel | normal | fraud/card_testing ✗ | fraud/high_amount ✗ | fraud/card_testing ✗ | 3 |
 | [c18](transcripts/c18.md) | impossible_travel | normal | fraud/impossible_travel ✓ | fraud/high_amount ✗ | fraud/impossible_travel ✓ | 2 |
-| [c19](transcripts/c19.md) | impossible_travel | normal | fraud/impossible_travel ✓ | fraud/impossible_travel ✓ | fraud/impossible_travel ✓ | 2 |
+| [c19](transcripts/c19.md) | impossible_travel | normal | fraud/impossible_travel ✓ | fraud/high_amount ✗ | fraud/impossible_travel ✓ | 2 |
 | [c20](transcripts/c20.md) | impossible_travel | normal | fraud/impossible_travel ✓ | fraud/high_amount ✗ | fraud/impossible_travel ✓ | 2 |
 | [c21](transcripts/c21.md) | impossible_travel | normal | fraud/impossible_travel ✓ | fraud/high_amount ✗ | fraud/impossible_travel ✓ | 2 |
-| [c22](transcripts/c22.md) | impossible_travel | normal | fraud/impossible_travel ✓ | fraud/high_amount ✗ | fraud/high_amount ✗ | 3 |
-| [c23](transcripts/c23.md) | impossible_travel | normal | legitimate/none ✗ | fraud/impossible_travel ✓ | legitimate/none ✗ | 2 |
+| [c22](transcripts/c22.md) | impossible_travel | normal | fraud/impossible_travel ✓ | fraud/high_amount ✗ | fraud/impossible_travel ✓ | 2 |
+| [c23](transcripts/c23.md) | impossible_travel | normal | legitimate/none ✗ | fraud/high_amount ✗ | legitimate/none ✗ | 2 |
 | [c24](transcripts/c24.md) | none | normal | fraud/card_testing ✗ | legitimate/none ✓ | fraud/card_testing ✗ | 2 |
 | [c25](transcripts/c25.md) | none | normal | legitimate/none ✓ | legitimate/none ✓ | legitimate/none ✓ | 1 |
 | [c26](transcripts/c26.md) | none | normal | legitimate/none ✓ | legitimate/none ✓ | legitimate/none ✓ | 1 |

@@ -8,9 +8,9 @@
   "errors": 0
  },
  "fraud_agents": {
-  "graph_pattern_accuracy": 0.767,
+  "graph_pattern_accuracy": 0.8,
   "graph_verdict_accuracy": 0.833,
-  "single_agent_pattern_accuracy": 0.467,
+  "single_agent_pattern_accuracy": 0.4,
   "rules_pattern_accuracy": 0.8,
   "graph_errors": 0
  },
