@@ -77,28 +77,31 @@ does not have. Every regression found so far, with cause, fix and evidence:
 <!-- LIVE:START -->
 **Dashboard: [diegotddd.github.io/llm-evals-observability](https://diegotddd.github.io/llm-evals-observability/)**
 (latency, tokens and errors per run, per LLM step and per MCP tool, and the exact arguments of
-every failed tool call), rebuilt by every live run.
+every failed tool call), rebuilt by every live run. This section is written by the same run ([`scripts/readme_live.py`](scripts/readme_live.py)).
 
-Live run [44567898582](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44567898582),
-qwen2.5:3b on CPU-only runners, both projects' own eval scripts run unchanged under the tracer:
+Latest live run [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) (2026-11-23), qwen2.5:3b on CPU-only runners, both projects' own eval scripts run unchanged under the tracer:
 
 | | sec-mcp-agent | fraud-investigation-agents |
 | --- | --- | --- |
-| End-to-end | 17 of 22 questions passed | graph 77% pattern accuracy (single agent 47%, rules 80%) |
-| Traces in Langfuse (read back through its API) | 22 traces, 231 observations | 62 traces, 976 observations |
-| Observation types | 78 generations, 22 tool calls, 131 spans | 110 generations, 341 tool calls, 525 spans |
+| End-to-end | 17 of 22 questions passed | graph 80% pattern accuracy (single agent 40%, rules 80%) |
+| Traces in Langfuse (read back through its API) | 22 traces, 231 observations | 62 traces, 1013 observations |
+| Observation types | 78 generations, 22 tool calls, 131 spans | 115 generations, 357 tool calls, 541 spans |
 | Live gate ([`baselines/live.json`](baselines/live.json)) | ✅ | ✅ |
 
-The two live runs so far gave sec-mcp-agent 14/22 and 17/22 with the same code, and the fraud
-graph 76.7% both times: the live gate's tolerances come from that measured variance
-([docs/regressions.md](docs/regressions.md), last note).
+Every live run, model at temperature 0. Rows with the same project version differ only by the model's run-to-run variance, which sets the live gate's tolerances ([docs/regressions.md](docs/regressions.md#note--run-to-run-variance-is-real-so-the-live-gate-has-tolerances)):
+
+| Run | Date | sec-mcp-agent version | Questions passed | fraud-investigation-agents version | Graph: pattern accuracy | Single agent | Rules |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| [44557681399](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44557681399) | 2026-11-19 | [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e0) | 14/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 77% | 47% | 80% |
+| [44567898582](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44567898582) | 2026-11-19 | [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e0) | 17/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 77% | 47% | 80% |
+| [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) | 2026-11-23 | [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06e) | 17/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 80% | 40% | 80% |
 <!-- LIVE:END -->
 
 ## Run it
 
 ```bash
 pip install -r requirements.txt -r requirements-dev.txt
-pytest -q -p anyio                                     # 18 tests
+pytest -q -p anyio                                     # 23 tests
 python scripts/run_offline.py                          # reports/offline.json
 python scripts/gate.py reports/offline.json baselines/offline.json
 

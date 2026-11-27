@@ -36,6 +36,11 @@ written by code, not by the model (that project's ADR 0001). `baselines/live.jso
 gates sec-mcp-agent's pass rate with a tolerance of 0.15 (about three questions) around the mean
 of the two runs, and the fraud graph with one case (0.034).
 
+Update, run 45249221224 (2026-11-23): with the same fraud-investigation-agents commit, the graph
+scored 80.0%, one case more than the first two runs, so it is not bit-for-bit repeatable either;
+the one-case tolerance covers that. Every run's numbers and project versions are in the README
+table, written by the live run itself.
+
 ## R5 — Unknown sections rejected (sec-mcp-agent, found here)
 
 - **Detected by:** the offline tool-call replay (`tool_calls` suite). After R1's fix, the calls

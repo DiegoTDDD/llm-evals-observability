@@ -1,0 +1,3 @@
+{"run": "44557681399", "date": "2026-11-19", "sec_ref": "80086e0", "fraud_ref": "4920573", "sec_passed": 14, "sec_questions": 22, "graph_pattern": 0.767, "single_pattern": 0.467, "rules_pattern": 0.8}
+{"run": "44567898582", "date": "2026-11-19", "sec_ref": "80086e0", "fraud_ref": "4920573", "sec_passed": 17, "sec_questions": 22, "graph_pattern": 0.767, "single_pattern": 0.467, "rules_pattern": 0.8}
+{"run": "45249221224", "date": "2026-11-23", "sec_ref": "e0bd06e", "fraud_ref": "4920573", "sec_passed": 17, "sec_questions": 22, "graph_pattern": 0.8, "single_pattern": 0.4, "rules_pattern": 0.8}

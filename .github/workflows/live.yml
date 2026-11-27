@@ -128,6 +128,9 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install opentelemetry-sdk==1.45.2 && pip install --no-deps -e .
+      - name: Drop last run's per-project results
+        # A project whose job failed must show no result, not last week's numbers.
+        run: rm -rf reports/live/sec-mcp-agent reports/live/fraud-investigation-agents reports/live/langfuse-*.json
       - uses: actions/download-artifact@v4
         with:
           pattern: live-*
@@ -138,12 +141,14 @@ jobs:
           cat reports/live/spans-*.jsonl > reports/live/spans.jsonl
           python -m evalobs.report reports/live/spans.jsonl reports/site/index.html
           python scripts/live_metrics.py reports/live reports/live/metrics.json
+          python scripts/readme_live.py "${{ github.run_id }}" \
+            --sec-ref "$SEC_MCP_AGENT_REF" --fraud-ref "$FRAUD_AGENTS_REF"
       - name: Commit the run's results
         run: |
           rm reports/live/spans-*.jsonl
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/
+          git add reports/ README.md
           git commit -m "Live run ${{ github.run_id }}" || exit 0
           git pull --rebase && git push
       - uses: actions/upload-pages-artifact@v3
