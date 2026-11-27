@@ -61,12 +61,33 @@ first live run), the trace dashboard led to R7, a wrong ticker for a company the
 | sec-mcp-agent | Accepted | "Not in the index" | Gate |
 | --- | --- | --- | --- |
 | [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e07f50c1e9f4309dca9a864c6f94bab3f84) | 83.3% | 20 | ❌ fails the new baseline |
-| [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06eb5040528f328dd61e42ac655439ac73fb) (current, R7 fixed) | **85.2%** | **17** | ✅ baseline |
+| [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06eb5040528f328dd61e42ac655439ac73fb) (R7 fixed) | **85.2%** | **17** | ✅ baseline |
+| [499ca2e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/499ca2e65ab976ba389ee3c88f51adde0508f7e6) (current, answer checks added) | 85.2% | 17 | ✅ |
 
 **Proof that the gate blocks it:** [pull request #1](https://github.com/DiegoTDDD/llm-evals-observability/pull/1)
 pins sec-mcp-agent back to 80086e0; the gate failed it
 ([run 44568525181](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44568525181):
 acceptance 0.833 against a baseline of 0.852) and it was closed without merging.
+
+### The gate also checks the answer check
+
+From [499ca2e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/499ca2e65ab976ba389ee3c88f51adde0508f7e6)
+sec-mcp-agent checks each answer's text against what its tools returned: every number must appear
+in a cited passage or a fraud score, and the answer must not contradict the model's verdict.
+Dataset `answers/v1` holds all 21 answers qwen2.5:3b gave to the fraud questions in the project's
+eval runs 1 to 7, labelled by hand. Two are wrong (R9): they say the model "flags" a purchase it
+scored 9.5% against a 56% threshold. The offline gate rescores all 21 with the pinned check:
+
+| Metric | Value | Baseline |
+| --- | --- | --- |
+| Wrong answers the check catches | 2 of 2 (100%) | 100%, no tolerance |
+| Correct answers it flags (false alarms) | 0 of 19 (0%) | 0%, no tolerance |
+
+A change that makes the check miss a contradiction fails the pull request
+([`tests/test_answers_suite.py`](tests/test_answers_suite.py) disables verdict detection and
+shows both answers slip through). The live runs record the same checks on fresh answers: the
+share of faithful sec-mcp-agent answers, and of fraud reports whose summary states only what the
+evidence shows.
 
 The replay also found R5: once R1 was fixed, most calls still rejected named sections the index
 does not have. Every regression found so far, with cause, fix and evidence:
@@ -86,6 +107,7 @@ Latest live results, qwen2.5:3b on CPU-only runners, both projects' own eval scr
 | Run | [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) (2026-11-23) | [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) (2026-11-23) |
 | Project version | [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06e) | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) |
 | End-to-end | 14 of 22 questions passed | graph 80% pattern accuracy (single agent 40%, rules 80%) |
+| Text that states only what the tools returned (the projects' own checks) | not measured at this version | not measured at this version |
 | Traces in Langfuse (read back through its API) | 22 traces, 232 observations | 62 traces, 1013 observations |
 | Observation types | 77 generations, 23 tool calls, 132 spans | 115 generations, 357 tool calls, 541 spans |
 | Live gate ([`baselines/live.json`](baselines/live.json)) | ✅ | ✅ |
@@ -120,11 +142,14 @@ python -m evalobs.report reports/spans.jsonl reports/site/index.html
 - [ADR 0002](docs/adr/0002-tracing-without-touching-the-projects.md): trace the projects without changing them.
 - [ADR 0003](docs/adr/0003-langfuse-in-ci-and-a-static-dashboard.md): self-hosted Langfuse per run, plus a static dashboard that outlives it.
 - [ADR 0004](docs/adr/0004-immutable-versioned-datasets.md): datasets are immutable and versioned.
+- [ADR 0005](docs/adr/0005-gate-the-projects-own-answer-checks.md): gate the projects' own answer checks on hand-labelled answers.
 
 ## Limits
 
-- The offline gate checks interfaces against recorded behaviour, not reasoning; reasoning is
-  measured weekly by the live runs.
+- The offline gate checks interfaces against recorded behaviour, and the answer check against 21
+  labelled answers with only 2 wrong ones; reasoning is measured weekly by the live runs.
+- The answer checks are deterministic: they catch unsupported numbers and contradicted verdicts,
+  not every misleading sentence.
 - Langfuse lives only for the duration of a live job; the persistent view is the static dashboard
   (or a local `docker compose up`).
 

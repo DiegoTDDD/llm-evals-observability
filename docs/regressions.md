@@ -3,6 +3,19 @@
 Real regressions found in the projects this repository evaluates, how each was detected, the
 fix, and the evidence. Newest first.
 
+## R9 — Answers that contradicted the fraud model (sec-mcp-agent, found by labelling answers)
+
+- **Detected by:** labelling every fraud answer of eval runs 1 to 7 for `answers/v1`. In runs 5
+  and 6, question t04, the answer says the model "flags this transaction with a probability of
+  9.52%"; the score it cites is below the 0.5625 threshold and `flagged` is false. Both runs
+  scored the question as passed, because the eval only checked which tools were called.
+- **Cause:** nothing compared the answer's text with the tool results.
+- **Fix:** [499ca2e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/499ca2e65ab976ba389ee3c88f51adde0508f7e6):
+  a deterministic check (numbers must appear in the sources, the stated verdict must match the
+  model's); failing answers are marked `[unverified]` and counted in the eval.
+- **Evidence:** the check catches both answers and flags none of the 19 correct ones; the
+  offline gate holds it there (ADR 0005).
+
 ## R8 — Each project's results overwritten by a stale copy (this repository, found in an audit)
 
 - **Detected by:** an audit of run 45249221224: the committed sec-mcp-agent results were

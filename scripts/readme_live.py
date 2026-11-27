@@ -45,6 +45,7 @@ def project_results(live: Path, metrics: dict, baseline: dict) -> dict[str, dict
         out[SEC] = {
             "passed": sec["summary"]["passed"],
             "questions": sec["summary"]["questions"],
+            "faithful_rate": sec["summary"].get("faithful_rate"),
         }
     fraud = metrics.get("fraud_agents")
     if fraud:
@@ -52,6 +53,8 @@ def project_results(live: Path, metrics: dict, baseline: dict) -> dict[str, dict
             "graph": fraud["graph_pattern_accuracy"],
             "single": fraud["single_agent_pattern_accuracy"],
             "rules": fraud["rules_pattern_accuracy"],
+            "graph_summaries": fraud.get("graph_summary_faithful_rate"),
+            "single_summaries": fraud.get("single_agent_summary_faithful_rate"),
         }
     for project, prefix in [(SEC, "sec_mcp_agent."), (FRAUD, "fraud_agents.")]:
         if project not in out:
@@ -99,6 +102,21 @@ def headline(project: str, res: dict) -> str:
     )
 
 
+def faithful_text(project: str, res: dict) -> str:
+    """The answer-text checks, for project versions that have them."""
+    if project == SEC:
+        rate = res.get("faithful_rate")
+        if rate is None:
+            return "not measured at this version"
+        return f"{round(rate * res['questions'])} of {res['questions']} answers"
+    if res.get("graph_summaries") is None:
+        return "not measured at this version"
+    return (
+        f"graph {pct(res['graph_summaries'])} of summaries "
+        f"(single agent {pct(res['single_summaries'])})"
+    )
+
+
 def langfuse_text(res: dict) -> tuple[str, str]:
     t = res.get("by_type", {})
     if res.get("traces") is None:
@@ -134,6 +152,8 @@ def render(runs: list[dict], model: str) -> str:
         f"| Project version | {ref_link(SEC, res[SEC].get('ref'))} | "
         f"{ref_link(FRAUD, res[FRAUD].get('ref'))} |",
         f"| End-to-end | {headline(SEC, res[SEC])} | {headline(FRAUD, res[FRAUD])} |",
+        "| Text that states only what the tools returned (the projects' own checks) | "
+        f"{faithful_text(SEC, res[SEC])} | {faithful_text(FRAUD, res[FRAUD])} |",
         f"| Traces in Langfuse (read back through its API) | {lf[SEC][0]} | {lf[FRAUD][0]} |",
         f"| Observation types | {lf[SEC][1]} | {lf[FRAUD][1]} |",
         "| Live gate ([`baselines/live.json`](baselines/live.json)) | "

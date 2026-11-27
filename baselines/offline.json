@@ -1,4 +1,6 @@
 {
  "tool_calls.acceptance_rate": {"value": 0.852, "higher_is_better": true, "tolerance": 0.0},
- "tool_calls.rejected_arguments_rate": {"value": 0.043, "higher_is_better": false, "tolerance": 0.0}
+ "tool_calls.rejected_arguments_rate": {"value": 0.043, "higher_is_better": false, "tolerance": 0.0},
+ "answers.unfaithful_caught_rate": {"value": 1.0, "higher_is_better": true, "tolerance": 0.0},
+ "answers.false_alarm_rate": {"value": 0.0, "higher_is_better": false, "tolerance": 0.0}
 }

@@ -1,6 +1,6 @@
 # The two projects under evaluation, pinned. Bumping a pin is how a change in them reaches the
 # gate here.
-sec-mcp-agent @ git+https://github.com/DiegoTDDD/sec-mcp-agent@e0bd06eb5040528f328dd61e42ac655439ac73fb
+sec-mcp-agent @ git+https://github.com/DiegoTDDD/sec-mcp-agent@499ca2e65ab976ba389ee3c88f51adde0508f7e6
 opentelemetry-sdk==1.45.2
 opentelemetry-exporter-otlp-proto-http==1.45.2
 mcp==2.3.0
