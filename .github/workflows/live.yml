@@ -39,13 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           repository: ${{ matrix.repo }}
           ref: ${{ matrix.service == 'sec-mcp-agent' && env.SEC_MCP_AGENT_REF || env.FRAUD_AGENTS_REF }}
           path: ext/${{ matrix.service }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -81,7 +81,7 @@ jobs:
             bash scripts/build_data.sh
           fi
       - name: Cache Ollama models
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.ollama/models
           key: ollama-${{ env.MODEL }}
@@ -109,7 +109,7 @@ jobs:
         run: |
           mkdir -p reports/live/${{ matrix.service }}
           cp -r ext/${{ matrix.service }}/eval/results.* reports/live/${{ matrix.service }}/ || true
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: live-${{ matrix.service }}
@@ -128,15 +128,15 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - run: pip install opentelemetry-sdk==1.45.2 && pip install --no-deps -e .
       - name: Drop last run's per-project results
         # A project whose job failed must show no result, not last week's numbers.
         run: rm -rf reports/live/sec-mcp-agent reports/live/fraud-investigation-agents reports/live/langfuse-*.json
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: live-*
           path: reports/live
@@ -156,11 +156,11 @@ jobs:
           git add reports/ README.md
           git commit -m "Live run ${{ github.run_id }}" || exit 0
           git pull --rebase && git push
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: reports/site
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Gate end-to-end metrics
         run: |
           if [ -f baselines/live.json ]; then
