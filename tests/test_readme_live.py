@@ -1,6 +1,7 @@
 """The README's live-run section is rendered from a run's files, and only that section changes."""
 
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -51,23 +52,28 @@ def repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_renders_the_run_and_keeps_the_rest_of_the_readme(repo):
-    readme_live.main(
-        [
-            "45249221224",
-            "--date",
-            "2026-11-23",
-            "--sec-ref",
-            "e0bd06eb5040528f",
-            "--fraud-ref",
-            "4920573",
-        ],
-        root=repo,
+def run(repo, run_id, date, sec="e0bd06eb5040528f", fraud="4920573"):
+    readme_live.main([run_id, "--date", date, "--sec-ref", sec, "--fraud-ref", fraud], root=repo)
+    return (repo / "README.md").read_text(encoding="utf-8")
+
+
+def add_fraud(repo):
+    write(
+        repo / "reports" / "live" / "langfuse-fraud-investigation-agents.json",
+        {
+            "traces": 62,
+            "observations": 1013,
+            "by_type": {"GENERATION": 115, "TOOL": 357, "SPAN": 541},
+        },
     )
-    text = (repo / "README.md").read_text(encoding="utf-8")
+
+
+def test_renders_the_run_and_keeps_the_rest_of_the_readme(repo):
+    add_fraud(repo)
+    text = run(repo, "45249221224", "2026-11-23")
     assert text.startswith("# Title\n\n<!-- LIVE:START -->\n")
     assert text.endswith("<!-- LIVE:END -->\n\n## Run it\n")
-    assert "old numbers" not in text
+    assert "old numbers" not in text and "no result" not in text
     assert "17 of 22 questions passed" in text
     assert "graph 80% pattern accuracy (single agent 40%, rules 80%)" in text
     assert "22 traces, 231 observations" in text
@@ -76,32 +82,49 @@ def test_renders_the_run_and_keeps_the_rest_of_the_readme(repo):
     assert "[e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06e) | 17/22 |" in text
 
 
-def test_a_project_without_files_shows_no_result(repo):
-    readme_live.main(["1", "--date", "2026-11-23"], root=repo)
-    text = (repo / "README.md").read_text(encoding="utf-8")
-    fraud_traces = [line for line in text.splitlines() if line.startswith("| Traces in Langfuse")]
-    assert fraud_traces[0].endswith("| no result |")
+def test_a_failed_project_keeps_its_last_finished_run(repo):
+    add_fraud(repo)
+    run(repo, "1", "2026-11-23")
+    live = repo / "reports" / "live"
+    shutil.rmtree(live / "fraud-investigation-agents", ignore_errors=True)
+    (live / "langfuse-fraud-investigation-agents.json").unlink()
+    metrics = json.loads((live / "metrics.json").read_text(encoding="utf-8"))
+    del metrics["fraud_agents"]
+    write(live / "metrics.json", metrics)
+    text = run(repo, "2", "2026-11-30")
+    run_row = next(line for line in text.splitlines() if line.startswith("| Run |"))
+    assert "actions/runs/2) (2026-11-30)" in run_row.split("|")[2]
+    assert "actions/runs/1) (2026-11-23)" in run_row.split("|")[3]
+    assert "graph 80% pattern accuracy" in text and "no result" not in text
+    row = next(line for line in text.splitlines() if line.startswith("| [2]("))
+    assert "| 17/22 |" in row and "[job failed](" in row
 
 
 def test_a_regression_shows_in_the_gate_row(repo):
+    add_fraud(repo)
     metrics = repo / "reports" / "live" / "metrics.json"
     data = json.loads(metrics.read_text(encoding="utf-8"))
     data["fraud_agents"]["graph_pattern_accuracy"] = 0.6
     write(metrics, data)
-    readme_live.main(["2", "--date", "2026-11-30"], root=repo)
-    assert "| ✅ | ❌ |" in (repo / "README.md").read_text(encoding="utf-8")
+    assert "| ✅ | ❌ |" in run(repo, "2", "2026-11-30")
 
 
-def test_history_keeps_one_line_per_run(repo):
-    readme_live.main(["1", "--date", "2026-11-19"], root=repo)
-    readme_live.main(["2", "--date", "2026-11-23"], root=repo)
-    readme_live.main(["2", "--date", "2026-11-23"], root=repo)  # the publish job rerun
+def test_a_rerun_replaces_its_run_in_the_history(repo):
+    add_fraud(repo)
+    run(repo, "1", "2026-11-19")
+    run(repo, "2", "2026-11-23")
+    run(repo, "2", "2026-11-23")
     lines = (repo / "reports" / "live" / "history.jsonl").read_text(encoding="utf-8").splitlines()
     assert [json.loads(line)["run"] for line in lines] == ["1", "2"]
-    assert "| [2](" in (repo / "README.md").read_text(encoding="utf-8")
+
+
+def test_nothing_to_publish_before_both_projects_have_finished_once():
+    with pytest.raises(SystemExit):
+        readme_live.render([{"run": "1", "date": "d", "projects": {}}], "m")
 
 
 def test_missing_markers_fail(repo):
+    add_fraud(repo)
     (repo / "README.md").write_text("# Title\n", encoding="utf-8")
     with pytest.raises(SystemExit):
         readme_live.main(["1"], root=repo)

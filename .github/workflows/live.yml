@@ -113,7 +113,12 @@ jobs:
         if: always()
         with:
           name: live-${{ matrix.service }}
-          path: reports/live/
+          # Only this project's files: the checkout also holds the other project's committed
+          # results, and uploading those let a stale copy overwrite the fresh one on merge.
+          path: |
+            reports/live/${{ matrix.service }}/
+            reports/live/langfuse-${{ matrix.service }}.json
+            reports/live/spans-${{ matrix.service }}.jsonl
 
   publish:
     needs: project

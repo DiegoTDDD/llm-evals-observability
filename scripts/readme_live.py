@@ -3,8 +3,10 @@
     python scripts/readme_live.py RUN_ID [--date YYYY-MM-DD] [--sec-ref SHA] [--fraud-ref SHA]
 
 Reads reports/live/metrics.json, reports/live/langfuse-*.json and the projects' results.json,
-appends the run to reports/live/history.jsonl (once per run id), and replaces the block between
-<!-- LIVE:START --> and <!-- LIVE:END --> in README.md. Nothing outside the markers changes.
+records the run in reports/live/history.jsonl (a rerun replaces its earlier entry), and
+replaces the block between <!-- LIVE:START --> and <!-- LIVE:END --> in README.md. Each
+project's numbers come from its latest finished run, so a project whose job failed keeps its
+last measured results, labelled with their run. Nothing outside the markers changes.
 """
 
 from __future__ import annotations
@@ -22,37 +24,52 @@ from evalobs.gate import evaluate, passed  # noqa: E402
 START, END = "<!-- LIVE:START -->", "<!-- LIVE:END -->"
 REPO = "https://github.com/DiegoTDDD/llm-evals-observability"
 SEC, FRAUD = "sec-mcp-agent", "fraud-investigation-agents"
+VARIANCE_NOTE = (
+    "docs/regressions.md#note--run-to-run-variance-is-real-so-the-live-gate-has-tolerances"
+)
 
 
-def pct(x: float | None) -> str:
-    return "no result" if x is None else f"{x:.0%}"
+def pct(x: float) -> str:
+    return f"{x:.0%}"
 
 
 def load(path: Path) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
-def run_entry(live: Path, run_id: str, date: str, refs: dict[str, str]) -> dict:
-    """The headline numbers of one run and the project versions it ran, for history.jsonl."""
+def project_results(live: Path, metrics: dict, baseline: dict) -> dict[str, dict]:
+    """Each project that finished in this run: headline numbers, Langfuse counts, gate, version."""
+    out: dict[str, dict] = {}
     sec = load(live / SEC / "results.json")
-    metrics = load(live / "metrics.json") or {}
-    fraud = metrics.get("fraud_agents", {})
-    entry: dict = {"run": run_id, "date": date, **{k: v[:7] for k, v in refs.items() if v}}
-    if sec is not None:
-        entry["sec_passed"] = sec["summary"]["passed"]
-        entry["sec_questions"] = sec["summary"]["questions"]
-    for key, name in [
-        ("graph_pattern", "graph_pattern_accuracy"),
-        ("single_pattern", "single_agent_pattern_accuracy"),
-        ("rules_pattern", "rules_pattern_accuracy"),
-    ]:
-        if name in fraud:
-            entry[key] = fraud[name]
-    return entry
+    if sec is not None and "sec_mcp_agent" in metrics:
+        out[SEC] = {
+            "passed": sec["summary"]["passed"],
+            "questions": sec["summary"]["questions"],
+        }
+    fraud = metrics.get("fraud_agents")
+    if fraud:
+        out[FRAUD] = {
+            "graph": fraud["graph_pattern_accuracy"],
+            "single": fraud["single_agent_pattern_accuracy"],
+            "rules": fraud["rules_pattern_accuracy"],
+        }
+    for project, prefix in [(SEC, "sec_mcp_agent."), (FRAUD, "fraud_agents.")]:
+        if project not in out:
+            continue
+        lf = load(live / f"langfuse-{project}.json") or {}
+        out[project] |= {
+            "traces": lf.get("traces"),
+            "observations": lf.get("observations"),
+            "by_type": lf.get("by_type", {}),
+            "gate": passed(
+                evaluate(metrics, {k: v for k, v in baseline.items() if k.startswith(prefix)})
+            ),
+        }
+    return out
 
 
 def append_history(history: Path, entry: dict) -> list[dict]:
-    """Add the run unless it is already there (a rerun of the publish job); return all runs."""
+    """Add the run, replacing an earlier entry for the same run id (a rerun); return all runs."""
     text = history.read_text(encoding="utf-8") if history.exists() else ""
     runs = [json.loads(line) for line in text.splitlines() if line]
     runs = [r for r in runs if r["run"] != entry["run"]] + [entry]
@@ -64,40 +81,42 @@ def ref_link(project: str, ref: str | None) -> str:
     return f"[{ref}](https://github.com/DiegoTDDD/{project}/commit/{ref})" if ref else "n/a"
 
 
-def gate_cell(metrics: dict, baseline: dict, prefix: str) -> str:
-    checks = evaluate(metrics, {k: v for k, v in baseline.items() if k.startswith(prefix)})
-    return "✅" if passed(checks) else "❌"
+def run_link(run: dict) -> str:
+    return f"[{run['run']}]({REPO}/actions/runs/{run['run']}) ({run['date']})"
 
 
-def langfuse_cells(live: Path, service: str) -> tuple[str, str]:
-    lf = load(live / f"langfuse-{service}.json")
-    if lf is None:
-        return "no result", "no result"
-    t = lf.get("by_type", {})
+def latest_with(runs: list[dict], project: str) -> dict | None:
+    """The most recent run in which the project finished."""
+    return next((r for r in reversed(runs) if project in r.get("projects", {})), None)
+
+
+def headline(project: str, res: dict) -> str:
+    if project == SEC:
+        return f"{res['passed']} of {res['questions']} questions passed"
     return (
-        f"{lf['traces']} traces, {lf['observations']} observations",
+        f"graph {pct(res['graph'])} pattern accuracy "
+        f"(single agent {pct(res['single'])}, rules {pct(res['rules'])})"
+    )
+
+
+def langfuse_text(res: dict) -> tuple[str, str]:
+    t = res.get("by_type", {})
+    if res.get("traces") is None:
+        return "not checked in this run", "not checked in this run"
+    return (
+        f"{res['traces']} traces, {res['observations']} observations",
         f"{t.get('GENERATION', 0)} generations, {t.get('TOOL', 0)} tool calls, "
         f"{t.get('SPAN', 0)} spans",
     )
 
 
-def render(live: Path, baseline: dict, runs: list[dict], model: str) -> str:
-    metrics = load(live / "metrics.json") or {}
-    now = runs[-1]
-    fraud = metrics.get("fraud_agents")
-    sec_cell = (
-        f"{now['sec_passed']} of {now['sec_questions']} questions passed"
-        if "sec_passed" in now
-        else "no result"
-    )
-    fraud_cell = (
-        f"graph {pct(fraud['graph_pattern_accuracy'])} pattern accuracy "
-        f"(single agent {pct(fraud['single_agent_pattern_accuracy'])}, "
-        f"rules {pct(fraud['rules_pattern_accuracy'])})"
-        if fraud
-        else "no result"
-    )
-    sec_lf, fraud_lf = langfuse_cells(live, SEC), langfuse_cells(live, FRAUD)
+def render(runs: list[dict], model: str) -> str:
+    """The section: each project's latest finished run, then every run."""
+    latest = {p: latest_with(runs, p) for p in (SEC, FRAUD)}
+    if not all(latest.values()):
+        raise SystemExit("no finished run for one of the projects yet: nothing to publish")
+    res = {p: latest[p]["projects"][p] for p in (SEC, FRAUD)}
+    lf = {p: langfuse_text(res[p]) for p in (SEC, FRAUD)}
     lines = [
         "**Dashboard: [diegotddd.github.io/llm-evals-observability]"
         "(https://diegotddd.github.io/llm-evals-observability/)**",
@@ -106,34 +125,49 @@ def render(live: Path, baseline: dict, runs: list[dict], model: str) -> str:
         "every failed tool call), rebuilt by every live run. This section is written by the same "
         "run ([`scripts/readme_live.py`](scripts/readme_live.py)).",
         "",
-        f"Latest live run [{now['run']}]({REPO}/actions/runs/{now['run']}) ({now['date']}), "
-        f"{model} on CPU-only runners, both projects' own eval scripts run unchanged under the "
-        "tracer:",
+        f"Latest live results, {model} on CPU-only runners, both projects' own eval scripts run "
+        "unchanged under the tracer:",
         "",
         f"| | {SEC} | {FRAUD} |",
         "| --- | --- | --- |",
-        f"| End-to-end | {sec_cell} | {fraud_cell} |",
-        f"| Traces in Langfuse (read back through its API) | {sec_lf[0]} | {fraud_lf[0]} |",
-        f"| Observation types | {sec_lf[1]} | {fraud_lf[1]} |",
+        f"| Run | {run_link(latest[SEC])} | {run_link(latest[FRAUD])} |",
+        f"| Project version | {ref_link(SEC, res[SEC].get('ref'))} | "
+        f"{ref_link(FRAUD, res[FRAUD].get('ref'))} |",
+        f"| End-to-end | {headline(SEC, res[SEC])} | {headline(FRAUD, res[FRAUD])} |",
+        f"| Traces in Langfuse (read back through its API) | {lf[SEC][0]} | {lf[FRAUD][0]} |",
+        f"| Observation types | {lf[SEC][1]} | {lf[FRAUD][1]} |",
         "| Live gate ([`baselines/live.json`](baselines/live.json)) | "
-        f"{gate_cell(metrics, baseline, 'sec_mcp_agent.')} | "
-        f"{gate_cell(metrics, baseline, 'fraud_agents.')} |",
+        f"{'✅' if res[SEC]['gate'] else '❌'} | {'✅' if res[FRAUD]['gate'] else '❌'} |",
         "",
         "Every live run, model at temperature 0. Rows with the same project version differ only "
         "by the model's run-to-run variance, which sets the live gate's tolerances "
-        "([docs/regressions.md](docs/regressions.md#note--run-to-run-variance-is-real-so-the-live-gate-has-tolerances)):",
+        f"([docs/regressions.md]({VARIANCE_NOTE})). "
+        "A job that fails is rerun automatically once "
+        "([`rerun-live.yml`](.github/workflows/rerun-live.yml)); one that fails twice turns "
+        "the run red and is listed as failed here.",
         "",
         f"| Run | Date | {SEC} version | Questions passed | {FRAUD} version | "
         "Graph: pattern accuracy | Single agent | Rules |",
         "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in runs:
-        sec = f"{r['sec_passed']}/{r['sec_questions']}" if "sec_passed" in r else "no result"
+        ps = r.get("projects", {})
+        sec, fraud = ps.get(SEC), ps.get(FRAUD)
+        failed = f"[job failed]({REPO}/actions/runs/{r['run']})"
+        sec_cells = (
+            f"{ref_link(SEC, sec.get('ref'))} | {sec['passed']}/{sec['questions']}"
+            if sec
+            else f"{ref_link(SEC, r.get('refs', {}).get(SEC))} | {failed}"
+        )
+        fraud_cells = (
+            f"{ref_link(FRAUD, fraud.get('ref'))} | {pct(fraud['graph'])} | "
+            f"{pct(fraud['single'])} | {pct(fraud['rules'])}"
+            if fraud
+            else f"{ref_link(FRAUD, r.get('refs', {}).get(FRAUD))} | {failed} | | "
+        )
         lines.append(
             f"| [{r['run']}]({REPO}/actions/runs/{r['run']}) | {r['date']} | "
-            f"{ref_link(SEC, r.get('sec_ref'))} | {sec} | {ref_link(FRAUD, r.get('fraud_ref'))} | "
-            f"{pct(r.get('graph_pattern'))} | {pct(r.get('single_pattern'))} | "
-            f"{pct(r.get('rules_pattern'))} |"
+            f"{sec_cells} | {fraud_cells} |"
         )
     return "\n".join(lines)
 
@@ -155,13 +189,17 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> None:
     parser.add_argument("--fraud-ref", default="", help="fraud-investigation-agents commit")
     args = parser.parse_args(argv)
     live = root / "reports" / "live"
-    refs = {"sec_ref": args.sec_ref, "fraud_ref": args.fraud_ref}
-    entry = run_entry(live, args.run_id, args.date, refs)
-    runs = append_history(live / "history.jsonl", entry)
+    refs = {SEC: args.sec_ref[:7], FRAUD: args.fraud_ref[:7]}
     baseline = load(root / "baselines" / "live.json") or {}
+    metrics = load(live / "metrics.json") or {}
+    projects = project_results(live, metrics, baseline)
+    for project, res in projects.items():
+        res["ref"] = refs[project] or None
+    entry = {"run": args.run_id, "date": args.date, "refs": refs, "projects": projects}
+    runs = append_history(live / "history.jsonl", entry)
     readme = root / "README.md"
     readme.write_text(
-        replace_block(readme.read_text(encoding="utf-8"), render(live, baseline, runs, args.model)),
+        replace_block(readme.read_text(encoding="utf-8"), render(runs, args.model)),
         encoding="utf-8",
     )
     print(f"README live section: run {args.run_id}, {len(runs)} runs in the history")

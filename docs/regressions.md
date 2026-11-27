@@ -3,6 +3,23 @@
 Real regressions found in the projects this repository evaluates, how each was detected, the
 fix, and the evidence. Newest first.
 
+## R8 — Each project's results overwritten by a stale copy (this repository, found in an audit)
+
+- **Detected by:** an audit of run 45249221224: the committed sec-mcp-agent results were
+  byte-for-byte those of the run before, although the run used a newer sec-mcp-agent commit.
+  The run's artifacts said otherwise: 14 of 22 questions, 232 Langfuse observations.
+- **Cause:** each project job uploaded all of `reports/live/`, which in the checkout also holds
+  the *other* project's results from the previous commit. The publish job merges both
+  artifacts, so whichever was extracted last replaced one project's fresh results with last
+  week's. Run 44567898582 published a stale fraud graph (76.7% instead of 80.0%) and run
+  45249221224 a stale sec-mcp-agent score (17/22 instead of 14/22). The span files were named
+  per project and were never affected, so the dashboard and dataset `tool_calls/v2` are right.
+- **Fix:** each job uploads only its own project's files; the publish job drops last run's
+  per-project files before merging. The three runs' results were rebuilt from each project's
+  own artifact, and the README section is now written from them.
+- **Evidence:** true results per run: sec-mcp-agent 14, 17, 14 of 22; fraud graph 76.7%, 80.0%,
+  80.0%; single agent 46.7%, 43.3%, 40.0%. All three runs pass the live gate.
+
 ## R7 — A wrong ticker lost a question the query answered (sec-mcp-agent, found in the traces)
 
 - **Detected by:** the trace dashboard of live run 44557681399, table "Tool errors (what the model
@@ -31,15 +48,15 @@ fix, and the evidence. Newest first.
 Same code (sec-mcp-agent 80086e0), same model, temperature 0, same questions: 17/22 in the
 project's own eval run and 14/22 in this repository's first live run. Ollama on a CPU is not
 bit-for-bit repeatable, and one different token early in a reply changes the tool call. The
-fraud-investigation-agents graph reproduced exactly (76.7% both times): its tool arguments are
-written by code, not by the model (that project's ADR 0001). `baselines/live.json` therefore
+fraud-investigation-agents graph scored 76.7% in both: its tool arguments are written by code,
+not by the model (that project's ADR 0001), so it varies less. `baselines/live.json` therefore
 gates sec-mcp-agent's pass rate with a tolerance of 0.15 (about three questions) around the mean
 of the two runs, and the fraud graph with one case (0.034).
 
-Update, run 45249221224 (2026-11-23): with the same fraud-investigation-agents commit, the graph
-scored 80.0%, one case more than the first two runs, so it is not bit-for-bit repeatable either;
-the one-case tolerance covers that. Every run's numbers and project versions are in the README
-table, written by the live run itself.
+Update after three live runs (results corrected in R8): sec-mcp-agent 14, 17 and 14 of 22,
+and the fraud graph 76.7%, 80.0% and 80.0% with the same commit, so the graph is not
+bit-for-bit repeatable either; the one-case tolerance covers that. Every run's numbers and
+project versions are in the README table, written by the live run itself.
 
 ## R5 — Unknown sections rejected (sec-mcp-agent, found here)
 

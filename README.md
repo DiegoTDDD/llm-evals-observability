@@ -79,22 +79,24 @@ does not have. Every regression found so far, with cause, fix and evidence:
 (latency, tokens and errors per run, per LLM step and per MCP tool, and the exact arguments of
 every failed tool call), rebuilt by every live run. This section is written by the same run ([`scripts/readme_live.py`](scripts/readme_live.py)).
 
-Latest live run [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) (2026-11-23), qwen2.5:3b on CPU-only runners, both projects' own eval scripts run unchanged under the tracer:
+Latest live results, qwen2.5:3b on CPU-only runners, both projects' own eval scripts run unchanged under the tracer:
 
 | | sec-mcp-agent | fraud-investigation-agents |
 | --- | --- | --- |
-| End-to-end | 17 of 22 questions passed | graph 80% pattern accuracy (single agent 40%, rules 80%) |
-| Traces in Langfuse (read back through its API) | 22 traces, 231 observations | 62 traces, 1013 observations |
-| Observation types | 78 generations, 22 tool calls, 131 spans | 115 generations, 357 tool calls, 541 spans |
+| Run | [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) (2026-11-23) | [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) (2026-11-23) |
+| Project version | [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06e) | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) |
+| End-to-end | 14 of 22 questions passed | graph 80% pattern accuracy (single agent 40%, rules 80%) |
+| Traces in Langfuse (read back through its API) | 22 traces, 232 observations | 62 traces, 1013 observations |
+| Observation types | 77 generations, 23 tool calls, 132 spans | 115 generations, 357 tool calls, 541 spans |
 | Live gate ([`baselines/live.json`](baselines/live.json)) | ✅ | ✅ |
 
-Every live run, model at temperature 0. Rows with the same project version differ only by the model's run-to-run variance, which sets the live gate's tolerances ([docs/regressions.md](docs/regressions.md#note--run-to-run-variance-is-real-so-the-live-gate-has-tolerances)):
+Every live run, model at temperature 0. Rows with the same project version differ only by the model's run-to-run variance, which sets the live gate's tolerances ([docs/regressions.md](docs/regressions.md#note--run-to-run-variance-is-real-so-the-live-gate-has-tolerances)). A job that fails is rerun automatically once ([`rerun-live.yml`](.github/workflows/rerun-live.yml)); one that fails twice turns the run red and is listed as failed here.
 
 | Run | Date | sec-mcp-agent version | Questions passed | fraud-investigation-agents version | Graph: pattern accuracy | Single agent | Rules |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [44557681399](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44557681399) | 2026-11-19 | [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e0) | 14/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 77% | 47% | 80% |
-| [44567898582](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44567898582) | 2026-11-19 | [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e0) | 17/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 77% | 47% | 80% |
-| [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) | 2026-11-23 | [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06e) | 17/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 80% | 40% | 80% |
+| [44567898582](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/44567898582) | 2026-11-19 | [80086e0](https://github.com/DiegoTDDD/sec-mcp-agent/commit/80086e0) | 17/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 80% | 43% | 80% |
+| [45249221224](https://github.com/DiegoTDDD/llm-evals-observability/actions/runs/45249221224) | 2026-11-23 | [e0bd06e](https://github.com/DiegoTDDD/sec-mcp-agent/commit/e0bd06e) | 14/22 | [4920573](https://github.com/DiegoTDDD/fraud-investigation-agents/commit/4920573) | 80% | 40% | 80% |
 <!-- LIVE:END -->
 
 ## Run it

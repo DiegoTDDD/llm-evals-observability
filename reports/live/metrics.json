@@ -1,8 +1,8 @@
 {
  "sec_mcp_agent": {
-  "pass_rate": 0.773,
-  "filings_pass_rate": 0.75,
-  "grounded_rate": 0.75,
+  "pass_rate": 0.636,
+  "filings_pass_rate": 0.562,
+  "grounded_rate": 0.562,
   "out_of_scope_pass_rate": 1.0,
   "fraud_exact_arguments_rate": 0.75,
   "errors": 0
