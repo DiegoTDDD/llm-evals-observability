@@ -1,46 +1,46 @@
 {
  "traces": 22,
- "observations": 232,
+ "observations": 235,
  "by_type": {
-  "GENERATION": 77,
+  "GENERATION": 81,
   "SPAN": 132,
-  "TOOL": 23
+  "TOOL": 22
  },
  "top_names": {
-  "chat qwen2.5:3b": 77,
+  "chat qwen2.5:3b": 81,
   "tools/list": 44,
   "server/discover": 44,
-  "agent.ask": 21,
-  "tool search_filings": 19,
-  "search_filings": 19,
+  "agent.ask": 22,
+  "search_filings": 18,
+  "tool search_filings": 18,
   "tool score_transaction": 4,
   "score_transaction": 4
  },
  "sample_roots": [
   {
    "name": "agent.ask",
-   "startTime": "2026-11-23T20:09:19.383Z",
-   "latency": 69.518
+   "startTime": "2026-11-28T02:47:28.752Z",
+   "latency": 80.355
   },
   {
    "name": "agent.ask",
-   "startTime": "2026-11-23T20:08:06.576Z",
-   "latency": 72.801
+   "startTime": "2026-11-28T02:46:10.844Z",
+   "latency": 77.9
   },
   {
    "name": "agent.ask",
-   "startTime": "2026-11-23T20:06:48.313Z",
-   "latency": 78.257
+   "startTime": "2026-11-28T02:45:04.420Z",
+   "latency": 66.416
   },
   {
    "name": "agent.ask",
-   "startTime": "2026-11-23T20:06:31.209Z",
-   "latency": 17.104
+   "startTime": "2026-11-28T02:43:51.188Z",
+   "latency": 73.219
   },
   {
    "name": "agent.ask",
-   "startTime": "2026-11-23T20:06:01.662Z",
-   "latency": 29.546
+   "startTime": "2026-11-28T02:43:34.452Z",
+   "latency": 16.736
   }
  ]
 }

@@ -1,46 +1,46 @@
 {
  "traces": 62,
- "observations": 1013,
+ "observations": 972,
  "by_type": {
-  "GENERATION": 115,
-  "SPAN": 541,
-  "TOOL": 357
+  "GENERATION": 110,
+  "SPAN": 523,
+  "TOOL": 339
  },
  "top_names": {
-  "tool get_recent_activity": 118,
-  "get_recent_activity": 118,
-  "chat qwen2.5:3b": 115,
+  "chat qwen2.5:3b": 110,
+  "get_recent_activity": 101,
+  "tool get_recent_activity": 101,
   "tools/list": 62,
   "server/discover": 62,
-  "score_transaction": 60,
   "tool score_transaction": 60,
+  "score_transaction": 60,
   "get_card_profile": 60
  },
  "sample_roots": [
   {
    "name": "graph.investigate",
-   "startTime": "2026-11-23T20:07:58.757Z",
-   "latency": 45.834
+   "startTime": "2026-11-28T02:30:56.982Z",
+   "latency": 36.825
   },
   {
    "name": "single_agent.investigate",
-   "startTime": "2026-11-23T20:07:34.044Z",
-   "latency": 24.713
+   "startTime": "2026-11-28T02:30:42.074Z",
+   "latency": 14.907
   },
   {
    "name": "graph.investigate",
-   "startTime": "2026-11-23T20:06:41.550Z",
-   "latency": 52.493
+   "startTime": "2026-11-28T02:29:59.423Z",
+   "latency": 42.649
   },
   {
    "name": "single_agent.investigate",
-   "startTime": "2026-11-23T20:06:17.148Z",
-   "latency": 24.402
+   "startTime": "2026-11-28T02:29:44.774Z",
+   "latency": 14.648
   },
   {
    "name": "graph.investigate",
-   "startTime": "2026-11-23T20:05:19.575Z",
-   "latency": 57.573
+   "startTime": "2026-11-28T02:28:58.264Z",
+   "latency": 46.508
   }
  ]
 }

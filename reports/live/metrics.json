@@ -1,18 +1,22 @@
 {
  "sec_mcp_agent": {
-  "pass_rate": 0.636,
-  "filings_pass_rate": 0.562,
-  "grounded_rate": 0.562,
+  "pass_rate": 0.773,
+  "filings_pass_rate": 0.75,
+  "grounded_rate": 0.75,
   "out_of_scope_pass_rate": 1.0,
   "fraud_exact_arguments_rate": 0.75,
-  "errors": 0
+  "errors": 0,
+  "faithful_rate": 0.955,
+  "verdict_mismatches": 0
  },
  "fraud_agents": {
-  "graph_pattern_accuracy": 0.8,
-  "graph_verdict_accuracy": 0.833,
+  "graph_pattern_accuracy": 0.833,
+  "graph_verdict_accuracy": 0.867,
   "single_agent_pattern_accuracy": 0.4,
   "rules_pattern_accuracy": 0.8,
-  "graph_errors": 0
+  "graph_errors": 0,
+  "graph_summary_faithful_rate": 0.9,
+  "single_agent_summary_faithful_rate": 0.5
  },
  "langfuse": {
   "fraud-investigation-agents": 62,

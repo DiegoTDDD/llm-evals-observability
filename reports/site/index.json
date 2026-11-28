@@ -1,6 +1,6 @@
 {
- "spans": 1247,
- "generated": "2026-11-23 20:12 UTC",
+ "spans": 1207,
+ "generated": "2026-11-28 02:49 UTC",
  "models": [
   "qwen2.5:3b"
  ],
@@ -10,27 +10,27 @@
    "run": "graph.investigate",
    "calls": 30,
    "errors": 0,
-   "p50": 42.533,
-   "p95": 75.926,
-   "total_seconds": 1434.5
+   "p50": 30.587,
+   "p95": 66.337,
+   "total_seconds": 1027.4
   },
   {
    "service": "fraud-investigation-agents",
    "run": "single_agent.investigate",
    "calls": 30,
    "errors": 0,
-   "p50": 25.021,
-   "p95": 28.559,
-   "total_seconds": 742.9
+   "p50": 16.422,
+   "p95": 20.609,
+   "total_seconds": 504.8
   },
   {
    "service": "sec-mcp-agent",
    "run": "agent.ask",
    "calls": 22,
    "errors": 0,
-   "p50": 99.163,
-   "p95": 220.976,
-   "total_seconds": 2255.5
+   "p50": 95.233,
+   "p95": 194.605,
+   "total_seconds": 2384.2
   }
  ],
  "llm": [
@@ -39,44 +39,44 @@
    "step": "Plan",
    "calls": 30,
    "errors": 0,
-   "p50": 15.821,
-   "p95": 21.987,
-   "total_seconds": 502.2,
+   "p50": 13.156,
+   "p95": 17.32,
+   "total_seconds": 389.9,
    "input_tokens": 5592,
-   "output_tokens": 5046
+   "output_tokens": 5061
   },
   {
    "service": "fraud-investigation-agents",
    "step": "Report",
-   "calls": 85,
+   "calls": 80,
    "errors": 0,
-   "p50": 20.051,
-   "p95": 28.535,
-   "total_seconds": 1672.4,
-   "input_tokens": 43839,
-   "output_tokens": 12863
+   "p50": 14.048,
+   "p95": 20.585,
+   "total_seconds": 1140.1,
+   "input_tokens": 39528,
+   "output_tokens": 11474
   },
   {
    "service": "sec-mcp-agent",
    "step": "AnswerDraft",
-   "calls": 33,
+   "calls": 37,
    "errors": 0,
-   "p50": 29.857,
-   "p95": 87.849,
-   "total_seconds": 1314.2,
-   "input_tokens": 42175,
-   "output_tokens": 10089
+   "p50": 27.645,
+   "p95": 85.665,
+   "total_seconds": 1531.8,
+   "input_tokens": 48911,
+   "output_tokens": 13305
   },
   {
    "service": "sec-mcp-agent",
    "step": "tool round",
-   "calls": 45,
+   "calls": 44,
    "errors": 0,
-   "p50": 13.208,
-   "p95": 56.619,
-   "total_seconds": 940.8,
-   "input_tokens": 51167,
-   "output_tokens": 5897
+   "p50": 17.252,
+   "p95": 54.485,
+   "total_seconds": 852.0,
+   "input_tokens": 48890,
+   "output_tokens": 5298
   }
  ],
  "tools": [
@@ -84,128 +84,123 @@
    "tool": "score_transaction",
    "calls": 64,
    "errors": 0,
-   "p50": 0.012,
-   "p95": 0.018,
-   "total_seconds": 0.8
+   "p50": 0.01,
+   "p95": 0.014,
+   "total_seconds": 0.6
   },
   {
    "tool": "get_recent_activity",
-   "calls": 118,
+   "calls": 101,
    "errors": 0,
-   "p50": 0.005,
-   "p95": 0.011,
-   "total_seconds": 0.7
+   "p50": 0.004,
+   "p95": 0.009,
+   "total_seconds": 0.5
   },
   {
    "tool": "get_card_profile",
    "calls": 60,
    "errors": 0,
-   "p50": 0.008,
-   "p95": 0.01,
-   "total_seconds": 0.4
+   "p50": 0.006,
+   "p95": 0.008,
+   "total_seconds": 0.3
   },
   {
    "tool": "search_filings",
-   "calls": 19,
-   "errors": 3,
-   "p50": 0.012,
-   "p95": 0.017,
+   "calls": 18,
+   "errors": 2,
+   "p50": 0.011,
+   "p95": 0.016,
    "total_seconds": 0.3
   },
   {
    "tool": "get_alert",
    "calls": 60,
    "errors": 0,
-   "p50": 0.004,
-   "p95": 0.006,
+   "p50": 0.003,
+   "p95": 0.005,
    "total_seconds": 0.2
   },
   {
    "tool": "get_last_location",
-   "calls": 59,
+   "calls": 58,
    "errors": 0,
-   "p50": 0.006,
-   "p95": 0.008,
+   "p50": 0.002,
+   "p95": 0.006,
    "total_seconds": 0.2
   }
  ],
  "tool_errors": [
   {
    "tool": "search_filings",
-   "error": "Error executing tool search_filings: 'COF' is not in the index. Companies: AAPL (Apple Inc.), AMZN (Amazon Com Inc), BA (Boeing Co), BAC (Bank Of America Corp /",
-   "arguments": "{\"ticker\": \"COF\", \"query\": \"operating segments\"}"
-  },
-  {
-   "tool": "search_filings",
    "error": "Error executing tool search_filings: 'TM' is not in the index. Companies: AAPL (Apple Inc.), AMZN (Amazon Com Inc), BA (Boeing Co), BAC (Bank Of America Corp /D",
-   "arguments": "{\"ticker\": \"TM\", \"query\": \"risk_factors\"}"
+   "arguments": "{\"query\": \"risk_factors\", \"ticker\": \"TM\"}"
   },
   {
    "tool": "search_filings",
    "error": "Error executing tool search_filings: 'SBUX' is not in the index. Companies: AAPL (Apple Inc.), AMZN (Amazon Com Inc), BA (Boeing Co), BAC (Bank Of America Corp ",
-   "arguments": "{\"ticker\": \"SBUX\", \"query\": \"coffee bean prices\"}"
+   "arguments": "{\"query\": \"coffee bean prices\", \"ticker\": \"SBUX\"}"
   }
  ],
  "slowest": [
   {
    "service": "sec-mcp-agent",
    "run": "agent.ask",
-   "seconds": 275.4,
-   "what": "What does Visa say about interchange fee regulation or litigation?"
-  },
-  {
-   "service": "sec-mcp-agent",
-   "run": "agent.ask",
-   "seconds": 221.0,
-   "what": "What does Boeing say about 737 production and quality?"
-  },
-  {
-   "service": "sec-mcp-agent",
-   "run": "agent.ask",
-   "seconds": 155.0,
-   "what": "What does Chevron say about the volatility of crude oil prices?"
-  },
-  {
-   "service": "sec-mcp-agent",
-   "run": "agent.ask",
-   "seconds": 129.9,
+   "seconds": 200.6,
    "what": "What does Pfizer say about patent expirations and loss of exclusivity?"
   },
   {
    "service": "sec-mcp-agent",
    "run": "agent.ask",
-   "seconds": 129.3,
-   "what": "What risks does Microsoft describe related to artificial intelligence?"
-  },
-  {
-   "service": "sec-mcp-agent",
-   "run": "agent.ask",
-   "seconds": 117.7,
-   "what": "How could climate change regulation affect Exxon Mobil's business, according to its 10-K?"
-  },
-  {
-   "service": "sec-mcp-agent",
-   "run": "agent.ask",
-   "seconds": 117.5,
+   "seconds": 194.6,
    "what": "What does UnitedHealth Group say about medical cost trends?"
   },
   {
    "service": "sec-mcp-agent",
    "run": "agent.ask",
-   "seconds": 115.4,
-   "what": "How many associates does Walmart employ?"
+   "seconds": 189.6,
+   "what": "What risks does Microsoft describe related to artificial intelligence?"
   },
   {
    "service": "sec-mcp-agent",
    "run": "agent.ask",
-   "seconds": 109.3,
+   "seconds": 173.1,
    "what": "What does Meta say about privacy and data protection regulation?"
   },
   {
    "service": "sec-mcp-agent",
    "run": "agent.ask",
-   "seconds": 104.4,
-   "what": "How does JPMorgan Chase describe its cybersecurity risk?"
+   "seconds": 142.7,
+   "what": "What does Visa say about interchange fee regulation or litigation?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 141.9,
+   "what": "What does Boeing say about 737 production and quality?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 140.8,
+   "what": "What does Chevron say about the volatility of crude oil prices?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 130.4,
+   "what": "What risks does Tesla describe about ramping up vehicle production?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 119.1,
+   "what": "How does Coca-Cola describe its operating segments?"
+  },
+  {
+   "service": "sec-mcp-agent",
+   "run": "agent.ask",
+   "seconds": 118.5,
+   "what": "How could climate change regulation affect Exxon Mobil's business, according to its 10-K?"
   }
  ]
 }
