@@ -22,6 +22,8 @@ testpaths = ["tests"]
 pythonpath = [".", "tests"]
 
 [tool.ruff]
+# The pip-audit script is shared unchanged by every repository's security workflow.
+extend-exclude = [".github/scripts"]
 line-length = 100
 target-version = "py311"
 
